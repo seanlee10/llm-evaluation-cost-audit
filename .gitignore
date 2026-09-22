@@ -1,0 +1,6 @@
+.env
+.env.*
+.arize-tmp-traces/
+artifacts/
+__pycache__/
+.DS_Store
