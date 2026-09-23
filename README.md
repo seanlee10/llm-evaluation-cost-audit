@@ -2,6 +2,8 @@
 
 A reusable skill for auditing LLM-as-judge costs in Arize. It focuses on evaluator attribution, reproducible accounting, and quality-preserving optimization experiments rather than duplicating general application cost analysis.
 
+The audit separates recorded usage from heuristic estimates, requires judge-specific cache evidence, and checks retry/final persistence outcomes before labeling evaluation failures as wasted spend. Optimization plans account for rare labels and distinguish usable-result recovery from actual cost reduction.
+
 The repository contains instructions, not an agent runtime or a standalone API client. It neither provisions credentials nor schedules jobs itself.
 
 ## Skill

@@ -36,6 +36,7 @@ Record the actual query or tool arguments, project, interval, filters, export li
 - A result equal to its limit is potentially truncated. Complete pagination or use bounded time batches within the requested scope; verify each batch's completeness. Do not assume a larger limit solves truncation.
 - If complete retrieval is unavailable, continue with a clearly labeled sample. Record selection method and missing coverage. A 30-day query window does not make a capped export a 30-day total or a representative sample.
 - Do not estimate population spend or coverage from sample size alone. Judge calls divided by application traces is not evaluation coverage.
+- Zero runs are an observation, not a coverage gap. Check enabled state, effective dates, schedule, input filters, eligible traffic, sampling, and retrieval completeness before concluding expected evaluations were missed. Keep task runs, evaluated objects, LLM attempts, and stored results as separate counts.
 
 ## 3. Compute and reconcile
 
@@ -53,6 +54,8 @@ Report, where supported:
 
 Keep unattributed evaluator spend in an `unknown evaluator` group. Keep missing-cost and missing-token counts visible; do not silently convert missing fields to zero.
 
+Separate recorded usage, tokenizer-derived counts, and heuristic scenarios in the report. Character-to-token ratios, assumed conversation length, and fixed completion lengths cannot establish observed token totals or distributions. If measured usage is unavailable, say so; put any useful estimate in a separate scenario with explicit inputs and uncertainty. Calculate all table rows and totals from the same unrounded ledger. Estimation uncertainty is not a tolerance for inconsistent arithmetic.
+
 ## 4. Investigate cost drivers
 
 Use representative span IDs or runtime-generated Arize links for each finding. Avoid reproducing raw user conversations in the report.
@@ -62,6 +65,8 @@ Use representative span IDs or runtime-generated Arize links for each finding. A
 - **Cache behavior:** Inspect token counters and relevant request configuration. Cost share is not hit rate. Claim session-specific behavior only with session IDs and sufficient evidence. Tool filtering, prefix reordering, and pre-warming do not guarantee cache improvements.
 - **Model choice:** Do not infer price tier from a model name. Propose a cheaper candidate only with a verified applicable price source; preserve task suitability as a hypothesis to test.
 - **Prompt caching:** Explain missing cache telemetry rather than inferring a provider's cache-write semantics or discounted rates from ambiguous field names.
+- **Judge cache evidence:** Use the judge execution's telemetry and applicable provider behavior. Application cache counters and empty evaluator invocation parameters do not establish judge caching status. Re-sending a full template does not prove a cache miss. If judge counters are missing, report cache usage as unknown.
+- **Result persistence failures:** An update error is evidence of an error, not proof of a billed call or permanently lost score. Correlate execution attempts, LLM completion/usage, retry history, and final stored result by evaluated object and evaluator/version. Report unresolved outcomes separately. Broadly distributed errors suggest a shared cause but do not establish a platform root cause.
 
 For each finding, separate observed facts, causal hypotheses, and a proposed validation experiment. Quantify only what the available data supports. If no defensible issue is found, report that outcome.
 
@@ -73,14 +78,18 @@ Use the same representative labeled examples for baseline and candidate, includi
 
 Measure cost alongside relevant agreement, error rates, and latency. If changing sampling, evaluate which failures might be missed. Express savings as a scenario for the observed population with explicit assumptions; include added routing or validation calls. Do not add overlapping savings or scale to traffic without evidence.
 
+For rare or high-impact labels, include adjudicated positive and negative cases and per-label precision/recall or appropriate false-negative measures. High aggregate agreement can hide complete failure on rare positives. Distinguish monitoring a population trend from detecting individual incidents: low or stable prevalence does not justify reducing sampling for the latter. Do not prescribe a sampling update command from prevalence alone; specify acceptance criteria and the workload owner's decision instead.
+
+For write-back fixes, verify final persistence, evaluator/object attribution, duplicate prevention, and retry behavior. Keep improved usable-result coverage separate from reduced model spend: saving an already-paid result may improve value without reducing calls. Backfills may add cost. One day's spend multiplied by 365 is an annualized scenario, not verified annual savings; disclose representativeness assumptions and account for overlapping changes.
+
 ## Output
 
 Return a Markdown report with:
 
 1. **Scope and confidence:** judge identification rule, time window, extraction details, counts, full vs. sampled status, access gaps.
-2. **Accounting:** recorded vs. calculated costs, metric formulas, reconciliation results, missing/invalid fields, evaluator/model breakdown.
+2. **Accounting:** recorded costs, price-calculated costs from measured usage, and heuristic scenarios in separate sections; metric formulas, reconciliation results, missing/invalid fields, evaluator/model breakdown.
 3. **Findings:** observation, evidence links/IDs, hypothesis, uncertainty, affected population, and attributable observed cost.
 4. **Validation plan:** baseline/candidate comparison, quality measures, scenario assumptions, overlapping recommendations, and next action.
-5. **Evidence appendix:** sanitized ledger and calculation artifact locations, or compact inline calculations if artifact retention is unavailable. Do not promise persistence of sandbox-local files.
+5. **Evidence appendix:** sanitized ledger and calculation artifact locations, or compact inline calculations if artifact retention is unavailable. Record the skill and accounting-reference paths actually read, plus the source revision if available, for reproducibility. Do not promise persistence of sandbox-local files.
 
 Before finishing, check that every number has a population, unit, and reproducible calculation; every cause has evidence or a hypothesis label; and every savings claim has a quality-validation plan.

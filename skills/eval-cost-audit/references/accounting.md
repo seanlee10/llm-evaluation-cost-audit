@@ -17,6 +17,18 @@ Never silently equate an absent counter with zero, a negative value with a refun
 - Never blend currencies. State currency, and mark it unknown if it cannot be established.
 - Missing cost records contribute to missingness counts, not a zero-cost claim. State cost coverage over identified judge calls.
 
+Keep three evidence classes separate:
+
+| Class | Permitted interpretation |
+|---|---|
+| Recorded cost/usage | Observed telemetry for the identified calls, not proof of invoiced charges |
+| Price-calculated cost | Measured usage multiplied by a verified applicable tariff, with discounts/cache assumptions disclosed |
+| Heuristic scenario | Assumed or approximated usage multiplied by a tariff; not measured spend |
+
+Tokenizing a template measures only that component under the chosen tokenizer; it does not establish the complete serialized request size. Character ratios, assumed session turns, and a constant completion length cannot supply measured distributions. If used for a scenario, show the assumptions and avoid spurious decimal precision.
+
+Recompute rows, subtotals, and the grand total from the same unrounded values. Display rounding may explain a bounded residual; uncertainty in estimated tokens cannot explain disagreement between sums calculated from the same inputs. Verify provider, region/deployment, model version, currency, pricing date, and token category when using a published tariff.
+
 For one aligned cohort and one token category:
 
 ```text
@@ -40,6 +52,16 @@ Report each measure with its eligible-record count and definition:
 | Cache-read cost share | Recorded cache-read cost / compatible total prompt cost |
 
 If token categories overlap or cache status is missing, the corresponding measure is unavailable. Report the measured subset. Cost share cannot establish token or request hit rate because unit prices differ. Do not infer cache retention, cross-session reuse, or cache-write premiums from these ratios alone.
+
+Evidence must come from the judge workload being audited. Zero cache counters on application calls, empty invocation settings, or repeated transmission of the template do not demonstrate absence of caching on judge calls. Do not transfer cache-write semantics from another provider or integration.
+
+## Failed evaluations and usable results
+
+Map task runs to evaluated objects and individual model attempts before calculating failure rates. One run may contain several evaluations, and retries may later persist a result. Define the numerator, denominator, observation cutoff, and unresolved count.
+
+To label cost as associated with a final failed evaluation, establish the model attempt and its recorded or calculated cost, error stage, retry outcome, and final score state. An error name alone establishes none of those links. Use “reported update failures” when only task errors are visible. Reserve “charged” for billing evidence; otherwise describe recorded or calculated cost.
+
+Keep cost associated with failed attempts, cost per usable result, and avoidable future spend separate. Fixing persistence can recover useful output while leaving model call volume unchanged. Backfill cost and duplicate-result risks belong in the validation plan.
 
 ## Attribution and counterfactuals
 
